@@ -1,0 +1,105 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="to-do-item.html">
+<link rel="stylesheet" href="to-do-app.css">
+<dom-module id="to-do-app">
+    <template>
+        <section class="todoapp">
+            <header class="header">
+                <h1>todos</h1>
+                <input id="txtNew" class="new-todo" placeholder="What needs to be done?" autofocus on-keydown="_addItem">
+            </header>
+            <section class="main">
+                <ul class="todo-list">
+                    <template id="list" is="dom-repeat" items="[[toDoList]]">
+                        <to-do-item to-do-item="[[item]]"></to-do-item>
+                    </template>
+                </ul>
+            </section>
+        </section>
+    </template>
+    <script>
+    Polymer({
+
+        is: 'to-do-app',
+
+        properties: {
+            toDoList: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+            }
+        },
+
+        listeners: {
+            'destroy': '_updateList'
+        },
+
+        attached: function () {
+            this._getSessionList();
+        },
+
+        _addItem: function (e) {
+            if (e.keyCode !== 13) {
+                return;
+            }
+
+            var newItem = this.$.txtNew.value;
+
+            if (!newItem) {
+                return;
+            }
+
+            this.$.list.items = [];
+
+            var item = {
+                id: 0,
+                label: newItem,
+                isCompleted: false,
+                isChecked: false
+            }
+
+            item.id = this.toDoList.length + 1;            
+
+            this.toDoList.push(item);
+
+            this.toDoList = this.toDoList.splice(0);
+
+            this._setSessionList();
+
+            this.$.txtNew.value = '';
+        },
+
+        _updateList: function(e){
+            if (!e.detail || e.detail <= 0) {
+                return;
+            }
+
+            this.toDoList = this.toDoList.filter(function (item) {
+                return item.id !== e.detail;
+            });
+
+            this._setSessionList();
+        },
+
+        _setSessionList: function () {
+            try{
+                sessionStorage.setItem("toDoList",JSON.stringify(this.toDoList));
+            }
+            catch(e){
+                console.log('session storage not available');
+            }
+        },
+
+        _getSessionList: function () {
+            try{
+                this.toDoList = JSON.parse(sessionStorage.getItem("toDoList")) || [];
+            }
+            catch(e){
+                console.log('session storage not available');
+            }
+        }
+
+    });
+    </script>
+</dom-module>

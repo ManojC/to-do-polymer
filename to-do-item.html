@@ -1,0 +1,65 @@
+<!--
+It is a to do item
+
+Example:
+
+    <to-do-item></to-do-item>
+
+Example:
+
+    <to-do-item>
+      <h2>Hello to-do-item</h2>
+    </to-do-item>
+
+@demo demo/index.html
+-->
+
+<dom-module id="to-do-item">
+	<template>
+		<style>
+			:host {
+				display: block;
+			}
+		</style>
+      <li class$="[[_completed]]">
+        <div class="view">
+          <input id="chkItem" class="toggle" type="checkbox" on-change="__changed" checked="{{isCompleted}}">
+          <label>[[toDoItem.label]]</label>
+          <button class="destroy" on-tap="_destroy"></button>
+        </div>
+      </li>
+		
+	</template>
+	<script>
+		Polymer({
+			is: 'to-do-item',
+
+			properties: {
+				toDoItem: {
+					type: Object
+				},
+
+				_isCompleted: {
+					type: Boolean
+				}
+			},
+
+			observers: [
+				'__onTaskComplete(_isCompleted)'
+			],
+
+			__onTaskComplete: function (_isCompleted) {
+				this._completed = _isCompleted ? 'completed' : '';
+				this.toDoItem.isCompleted = _isCompleted;
+			},
+
+			__changed: function () {
+				this._isCompleted = this.$.chkItem.checked;
+			},
+
+			_destroy: function () {
+				this.fire('destroy', this.toDoItem.id);
+			}
+		});
+	</script>
+</dom-module>
