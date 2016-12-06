@@ -10,8 +10,12 @@
             </header>
             <section class="main">
                 <ul class="todo-list">
-                    <template id="list" is="dom-repeat" items="[[toDoList]]">
-                        <to-do-item to-do-item="[[item]]"></to-do-item>
+                    <template id="list" is="dom-repeat" items="{{toDoList}}">
+                        <to-do-item 
+                            item-id="{{item.itemId}}"
+                            label="{{item.label}}"
+                            is-completed="{{item.isCompleted}}">                                
+                        </to-do-item>
                     </template>
                 </ul>
             </section>
@@ -32,7 +36,8 @@
         },
 
         listeners: {
-            'destroy': '_updateList'
+            'destroy': '_destroyItem',
+            'task-complete': '_updateItem'
         },
 
         attached: function () {
@@ -53,13 +58,12 @@
             this.$.list.items = [];
 
             var item = {
-                id: 0,
+                itemId: 0,
                 label: newItem,
-                isCompleted: false,
-                isChecked: false
+                isCompleted: false
             }
 
-            item.id = this.toDoList.length + 1;            
+            item.itemId = this.toDoList.length + 1;            
 
             this.toDoList.push(item);
 
@@ -70,14 +74,32 @@
             this.$.txtNew.value = '';
         },
 
-        _updateList: function(e){
+        _destroyItem: function(e){
             if (!e.detail || e.detail <= 0) {
                 return;
             }
 
             this.toDoList = this.toDoList.filter(function (item) {
-                return item.id !== e.detail;
+                return item.itemId !== e.detail;
             });
+
+            this._setSessionList();
+        },
+
+        _updateItem: function(e){
+            if (!e.detail || !e.detail.itemId || e.detail.itemId <= 0) {
+                return;
+            }
+
+            var item = this.toDoList.find(function (item) {
+                return item.itemId === e.detail.itemId;
+            });
+
+            if (!item) {
+                return;
+            }
+
+            item.isCompleted = e.detail.isCompleted;
 
             this._setSessionList();
         },
