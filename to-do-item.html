@@ -21,10 +21,10 @@ Example:
 				display: block;
 			}
 		</style>
-      <li class$="[[_completed]]">
+      <li class$="[[_completedCss]]">
         <div class="view">
-          <input id="chkItem" class="toggle" type="checkbox" on-change="__changed" checked="{{isCompleted}}">
-          <label>[[toDoItem.label]]</label>
+          <input id="chkItem" class="toggle" type="checkbox" on-change="_onTaskComplete" checked="{{isCompleted::input}}">
+          <label>[[label]]</label>
           <button class="destroy" on-tap="_destroy"></button>
         </div>
       </li>
@@ -35,30 +35,39 @@ Example:
 			is: 'to-do-item',
 
 			properties: {
-				toDoItem: {
-					type: Object
+				itemId: {
+					type: Number
 				},
 
-				_isCompleted: {
+				label: {
+					type: String
+				},
+
+				isCompleted: {
 					type: Boolean
+				},
+
+				_completedCss: {
+					type: String,
+					computed: '_completed(isCompleted)'
 				}
 			},
 
-			observers: [
-				'__onTaskComplete(_isCompleted)'
-			],
-
-			__onTaskComplete: function (_isCompleted) {
-				this._completed = _isCompleted ? 'completed' : '';
-				this.toDoItem.isCompleted = _isCompleted;
+			_onTaskComplete: function () {				
+				this.isCompleted = this.$.chkItem.checked;
+				this.fire('task-complete', {
+					itemId: this.itemId,
+					isCompleted: this.isCompleted,
+					label: this.label
+				});
 			},
 
-			__changed: function () {
-				this._isCompleted = this.$.chkItem.checked;
+			_completed: function (isCompleted) {
+				return isCompleted ? 'completed' : '';
 			},
 
 			_destroy: function () {
-				this.fire('destroy', this.toDoItem.id);
+				this.fire('destroy', parseInt(this.itemId));
 			}
 		});
 	</script>
